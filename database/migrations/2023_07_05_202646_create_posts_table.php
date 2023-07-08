@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title')->unique();
             $table->string('body');
             $table->integer('min_to_read');
-            $table->string('image');
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }

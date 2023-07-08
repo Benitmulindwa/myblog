@@ -12,8 +12,8 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts=Post::orderBy('updated_at')->paginate(15);
-        //dd("TEST");
+        $posts=Post::latest()->paginate(6);
+
         return view('blog.index',[
             'posts'=>$posts
         ]);
@@ -24,7 +24,7 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        return view('blog.create');
     }
 
     /**
@@ -32,7 +32,24 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $fields=$request->validate([
+
+            'title'=>'required|string|unique:posts,title|max:30',
+            'min_to_read'=>'required|numeric',
+            'body'=>'required|string|max:255',
+            'image'=>'nullable|image',
+        ]);
+        if($request->hasFile('image')){
+            $fields['image']=$this->storeimage($request);
+        }
+        // else {
+        //     $fields['image']=''
+        // }
+
+        Post::create($fields);
+
+        return redirect(route('blog.index'))
+            ->with('message','The article has been created successfully');
     }
 
     /**
@@ -40,7 +57,11 @@ class PostController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $post=Post::findorfail($id);
+        //dd($post);
+        return view('blog.show',[
+            'post'=>$post
+        ]);
     }
 
     /**
@@ -48,7 +69,9 @@ class PostController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return view('blog.edit',[
+            'post'=>Post::findorfail($id)
+        ]);
     }
 
     /**
@@ -56,7 +79,11 @@ class PostController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $post=Post::findorfail($id);
+        $post->update($request->except(['_token','_method']));
+
+        return redirect(route('blog.index'))->with('message', 'The article has been updated successfully');
+
     }
 
     /**
@@ -64,6 +91,16 @@ class PostController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $post=Post::findorfail($id);
+        $post->delete();
+
+        return redirect(route('blog.index'))->with('message','Post has been deleted successfully!');
     }
+    public function storeimage($request){
+
+        
+        $newImageName=uniqId().'-'.$request->title.'.'.$request->image->extension();
+        return $request->image->move(public_path('image'), $newImageName);
+        }
+    
 }
