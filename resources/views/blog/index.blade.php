@@ -30,6 +30,19 @@
                href="{{route('blog.create')}}">
                 New Article
             </a>
+
+            <form 
+                action="{{route('logout')}}"
+                method="POST" class="inline-block" enctype="multipart/form-data">
+                @csrf
+            
+                <button
+                    type="submit"
+                    class="italic" style="color: black; margin-left:800px; background-color: #22C55E; padding: 12px 24px; border-radius: 30px">
+                    LOG OUT
+                </button>  
+            </form>
+
         </div>
     </div>
 
@@ -51,33 +64,35 @@
                     Made by:
                         <a href=""
                            class="text-green-500 italic hover:text-green-400 hover:border-b-2 border-green-400 pb-3 transition-all">
-                            Dary
+                           {{$post->user->name}}
                         </a>
                     on {{$post->created_at}}
                 </span>
-
-                <div class="mt-2">
-                    <span class="text-gray-500 text-sm sm:text-base">
-                            <a href="{{route('blog.edit',$post->id)}}"
-                            class="text-green-500 italic hover:text-green-400 hover:border-b-2 border-green-400 pb-3 transition-all">
-                                Edit
-                            </a>
-                    </span>
-                    <form 
-                        action="{{route('blog.destroy',$post->id)}}"
-                        method="POST" class="inline-block ml-2" enctype="multipart/form-data">
-                        @csrf
-                        @method('DELETE')
-
-                        <button
-                            type="submit"
-                            class="italic" style="color: red;">
-                            Delete
-                        </button>
-                    </form>
-
-                </div>
-
+                @auth
+                    <div class="mt-2">
+                        <span class="text-gray-500 text-sm sm:text-base">
+                                <a href="{{route('blog.edit',$post->id)}}"
+                                class="text-green-500 italic hover:text-green-400 hover:border-b-2 border-green-400 pb-3 transition-all">
+                                    Edit
+                                </a>
+                        </span>
+                        <form 
+                            action="{{route('blog.destroy',$post->id)}}"
+                            method="POST" class="inline-block ml-2" enctype="multipart/form-data">
+                            @csrf
+                            @method('DELETE')
+    
+                            <button
+                                type="submit"
+                                class="italic" style="color: red;">
+                                Delete
+                            </button>
+                            
+                        </form>
+    
+                    </div>
+                @endauth
+                
             </div>
                
             </div>

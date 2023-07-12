@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            //$table->unsignedBigInteger('user_id')->default(1);
             $table->string('title')->unique();
             $table->string('body');
             $table->integer('min_to_read');

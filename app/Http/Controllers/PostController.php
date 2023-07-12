@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Nette\Utils\Strings;
 
 class PostController extends Controller
 {
@@ -11,11 +13,9 @@ class PostController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        $posts=Post::latest()->paginate(6);
-
+    {  
         return view('blog.index',[
-            'posts'=>$posts
+            'posts'=>Post::latest()->paginate(6),
         ]);
     }
 
@@ -42,14 +42,12 @@ class PostController extends Controller
         if($request->hasFile('image')){
             $fields['image']=$this->storeimage($request);
         }
-        // else {
-        //     $fields['image']=''
-        // }
-
+        
+        $fields['user_id']=auth()->id();
+        //dd($fields);
         Post::create($fields);
 
-        return redirect(route('blog.index'))
-            ->with('message','The article has been created successfully');
+        return redirect(route('blog.index'))->with('message','The article has been created successfully');
     }
 
     /**
@@ -58,7 +56,7 @@ class PostController extends Controller
     public function show(string $id)
     {
         $post=Post::findorfail($id);
-        //dd($post);
+        //dd($post->user_id);
         return view('blog.show',[
             'post'=>$post
         ]);
@@ -67,19 +65,25 @@ class PostController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
+       $post=Post::findOrfail($id);
+
         return view('blog.edit',[
-            'post'=>Post::findorfail($id)
+            'post'=>$post
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        $post=Post::findorfail($id);
+        $post=Post::findOrfail($id);
+        if($post->user_id !=auth()->id()){
+            abort(403, 'Unauthorized Action');
+        }
+
         $post->update($request->except(['_token','_method']));
 
         return redirect(route('blog.index'))->with('message', 'The article has been updated successfully');
@@ -89,9 +93,15 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+   
+    public function destroy($id)
     {
-        $post=Post::findorfail($id);
+        $post=Post::findOrfail($id);
+
+        if($post->user_id !=auth()->id()){
+            abort(403, 'Unauthorized Action');
+        }
+
         $post->delete();
 
         return redirect(route('blog.index'))->with('message','Post has been deleted successfully!');
